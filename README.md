@@ -1,22 +1,32 @@
-# AIR Research PoC
+# AIR Research
 
-「なんとなく不快な空間」を数値化・可視化するシステムのプロトタイプ。
+「なんとなく不快な空間」を数値化・可視化するシステム。
+
+## 構成
 
 ```
-firmware/   ESP32+BME680 センサーファームウェア (Arduino)
-analysis/   Pythonデータ解析・レポート生成
-data/       センサーログ (JSON)
-report/     生成済みHTMLレポート
+firmware/     ESP32+BME680 センサーファームウェア
+server/       FastAPI 受信サーバー (本番: BigQuery)
+analysis/     分析エンジン + HTMLレポート生成
+data/         データ・サンプル
+db/           Oracle 23c Free スキーマ定義 (ローカル実験用)
+report/       生成レポート出力
 ```
 
 ## クイックスタート
 
 ```bash
 # サンプルデータでレポート生成
-cd analysis
-python3 analyze.py
+make report
 
-# 出力: report/index.html をブラウザで開く
+# 出力: report/index.html
+```
+
+## ローカルで Oracle で遊ぶ
+
+```bash
+docker compose up -d oracle
+python3 db/query.py
 ```
 
 ## 測定指標
@@ -27,11 +37,4 @@ python3 analyze.py
 | 湿度 | BME680 | 40〜60%RH |
 | VOC/IAQ | BME680 | < 100 |
 | 気流乱流 | MPU6050 | < 0.05 m/s² |
-| **体感不快指数** | 合成 | **< 30** |
-
-## ハードウェア (1台 約¥3,000)
-
-ESP32 + BME680 + MPU6050 で構成。
-WiFiでデータをリアルタイム送信 or シリアルでローカル取得。
-
-詳細 → `firmware/README.md`
+| 体感不快指数 | 合成 | < 30 |
