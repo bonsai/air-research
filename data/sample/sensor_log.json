@@ -1,0 +1,16 @@
+[
+  {"sensor_id":"poc-001","timestamp":1000,"temperature":24.2,"humidity":58.3,"pressure":1013.2,"gas_resistance":42.1,"iaq":85,"turbulence":0.012,"discomfort":22.4},
+  {"sensor_id":"poc-001","timestamp":6000,"temperature":24.5,"humidity":59.1,"pressure":1013.1,"gas_resistance":40.8,"iaq":91,"turbulence":0.015,"discomfort":24.7},
+  {"sensor_id":"poc-001","timestamp":11000,"temperature":25.1,"humidity":61.0,"pressure":1013.0,"gas_resistance":38.5,"iaq":102,"turbulence":0.031,"discomfort":29.3},
+  {"sensor_id":"poc-001","timestamp":16000,"temperature":25.8,"humidity":63.4,"pressure":1012.9,"gas_resistance":35.2,"iaq":118,"turbulence":0.055,"discomfort":35.6},
+  {"sensor_id":"poc-001","timestamp":21000,"temperature":26.3,"humidity":65.8,"pressure":1012.8,"gas_resistance":31.0,"iaq":135,"turbulence":0.078,"discomfort":42.1},
+  {"sensor_id":"poc-001","timestamp":26000,"temperature":27.0,"humidity":67.2,"pressure":1012.7,"gas_resistance":28.4,"iaq":148,"turbulence":0.102,"discomfort":49.8},
+  {"sensor_id":"poc-001","timestamp":31000,"temperature":27.4,"humidity":68.5,"pressure":1012.6,"gas_resistance":26.1,"iaq":162,"turbulence":0.134,"discomfort":56.3},
+  {"sensor_id":"poc-001","timestamp":36000,"temperature":27.8,"humidity":69.3,"pressure":1012.5,"gas_resistance":24.8,"iaq":170,"turbulence":0.158,"discomfort":61.2},
+  {"sensor_id":"poc-001","timestamp":41000,"temperature":26.5,"humidity":66.0,"pressure":1012.6,"gas_resistance":27.5,"iaq":152,"turbulence":0.115,"discomfort":51.4},
+  {"sensor_id":"poc-001","timestamp":46000,"temperature":25.9,"humidity":63.8,"pressure":1012.8,"gas_resistance":30.2,"iaq":138,"turbulence":0.089,"discomfort":44.7},
+  {"sensor_id":"poc-001","timestamp":51000,"temperature":25.4,"humidity":61.5,"pressure":1012.9,"gas_resistance":33.1,"iaq":122,"turbulence":0.062,"discomfort":37.9},
+  {"sensor_id":"poc-001","timestamp":56000,"temperature":24.9,"humidity":60.2,"pressure":1013.0,"gas_resistance":36.4,"iaq":108,"turbulence":0.044,"discomfort":31.5},
+  {"sensor_id":"poc-001","timestamp":61000,"temperature":24.6,"humidity":58.9,"pressure":1013.1,"gas_resistance":39.2,"iaq":95,"turbulence":0.028,"discomfort":26.8},
+  {"sensor_id":"poc-001","timestamp":66000,"temperature":24.3,"humidity":58.1,"pressure":1013.2,"gas_resistance":41.5,"iaq":88,"turbulence":0.019,"discomfort":23.2}
+]

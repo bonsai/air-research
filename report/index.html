@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>AIR Research — 空間環境レポート</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Hiragino Sans','Noto Sans JP',sans-serif;background:#f4f6f9;color:#2c3e50;font-size:14px}
+    .page{max-width:900px;margin:0 auto;padding:24px}
+    header{background:#1a252f;color:#fff;padding:24px 32px;border-radius:12px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center}
+    header h1{font-size:22px;font-weight:700;letter-spacing:.05em}
+    header .meta{font-size:12px;opacity:.7;text-align:right;line-height:1.8}
+    .score-card{background:#fff;border-radius:12px;padding:24px;margin-bottom:20px;display:flex;align-items:center;gap:32px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+    .score-ring{width:100px;height:100px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:#fff;background:#e67e22;flex-shrink:0}
+    .score-desc h2{font-size:18px;margin-bottom:8px}
+    .score-desc p{color:#666;line-height:1.7}
+    h2{font-size:16px;font-weight:700;margin:0 0 12px;padding-bottom:8px;border-bottom:2px solid #eee}
+    .card{background:#fff;border-radius:12px;padding:20px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px 12px;text-align:left;border-bottom:1px solid #eee}
+    th{background:#f8f9fa;font-weight:600;font-size:13px}
+    .badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:12px;font-weight:600}
+    .badge.good{background:#d5f5e3;color:#1e8449}
+    .badge.warn{background:#fef9e7;color:#b7770d}
+    .badge.bad{background:#fde8e8;color:#c0392b}
+    .causes{padding-left:20px}
+    .causes li{margin-bottom:8px;line-height:1.6}
+    .chart-wrap{position:relative;height:220px;margin-top:8px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    footer{text-align:center;color:#999;font-size:12px;margin-top:32px;padding-top:16px;border-top:1px solid #eee}
+    @media(max-width:600px){.grid2{grid-template-columns:1fr}.score-card{flex-direction:column}}
+  </style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div>
+      <h1>空間環境レポート</h1>
+      <div style="font-size:13px;opacity:.8;margin-top:4px">AIR Research PoC</div>
+    </div>
+    <div class="meta">
+      センサー: poc-001<br>
+      測定時間: 65秒 / 14サンプル<br>
+      生成: 2026-06-23 03:09
+    </div>
+  </header>
+
+  <div class="score-card">
+    <div class="score-ring">40</div>
+    <div class="score-desc">
+      <h2>総合快適スコア</h2>
+      <p>一部の指標に改善余地があります。</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>各指標サマリー</h2>
+    <table>
+      <tr><th>指標</th><th>平均値</th><th>範囲</th><th>P95</th><th>評価</th></tr>
+      
+        <tr>
+          <td>温度</td>
+          <td>25.69°C</td>
+          <td>24.2 – 27.8°C</td>
+          <td>27.8°C</td>
+          <td><span class="badge good">良好</span></td>
+        </tr>
+        <tr>
+          <td>湿度</td>
+          <td>62.94%RH</td>
+          <td>58.1 – 69.3%RH</td>
+          <td>69.3%RH</td>
+          <td><span class="badge warn">注意</span></td>
+        </tr>
+        <tr>
+          <td>空気質(IAQ)</td>
+          <td>122.43</td>
+          <td>85 – 170</td>
+          <td>170</td>
+          <td><span class="badge warn">注意</span></td>
+        </tr>
+        <tr>
+          <td>気流乱流</td>
+          <td>0.07m/s²</td>
+          <td>0.01 – 0.16m/s²</td>
+          <td>0.16m/s²</td>
+          <td><span class="badge warn">注意</span></td>
+        </tr>
+        <tr>
+          <td>体感不快指数</td>
+          <td>38.35pt</td>
+          <td>22.4 – 61.2pt</td>
+          <td>61.2pt</td>
+          <td><span class="badge warn">注意</span></td>
+        </tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>体感不快指数 推移</h2>
+    <div class="chart-wrap">
+      <canvas id="mainChart"></canvas>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h2>温度 / 湿度</h2>
+      <div class="chart-wrap">
+        <canvas id="thChart"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <h2>空気質 (IAQ)</h2>
+      <div class="chart-wrap">
+        <canvas id="iaqChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>原因分析・改善提言</h2>
+    <ul class="causes">
+      <li>湿度過多 (62.94%RH) — 換気または除湿を推奨</li><li>IAQ悪化 (平均122.43) — CO₂蓄積またはVOC発生源を調査</li><li>気流乱流あり (平均0.07m/s²) — 吹き出し口・障害物の配置を確認</li>
+    </ul>
+  </div>
+
+  
+        <h2>検出イベント</h2>
+        <table>
+          <tr><th>開始</th><th>終了</th><th>継続時間</th><th>種別</th></tr>
+          <tr><td>31s</td><td>46s</td><td>15秒</td><td>高不快ゾーン</td></tr>
+        </table>
+
+  <footer>AIR Research PoC — 測定データは参考値です。詳細は専門家による現地調査をご依頼ください。</footer>
+</div>
+
+<script>
+const labels = ["1s", "6s", "11s", "16s", "21s", "26s", "31s", "36s", "41s", "46s", "51s", "56s", "61s", "66s"];
+const discomfort = [22.4, 24.7, 29.3, 35.6, 42.1, 49.8, 56.3, 61.2, 51.4, 44.7, 37.9, 31.5, 26.8, 23.2];
+const temperature = [24.2, 24.5, 25.1, 25.8, 26.3, 27.0, 27.4, 27.8, 26.5, 25.9, 25.4, 24.9, 24.6, 24.3];
+const humidity = [58.3, 59.1, 61.0, 63.4, 65.8, 67.2, 68.5, 69.3, 66.0, 63.8, 61.5, 60.2, 58.9, 58.1];
+const iaq = [85, 91, 102, 118, 135, 148, 162, 170, 152, 138, 122, 108, 95, 88];
+
+const defaults = {
+  pointRadius: 3,
+  borderWidth: 2,
+  tension: 0.3,
+  fill: false,
+};
+
+new Chart(document.getElementById('mainChart'), {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [{
+      ...defaults,
+      label: '体感不快指数',
+      data: discomfort,
+      borderColor: '#e74c3c',
+      backgroundColor: 'rgba(231,76,60,.08)',
+      fill: true,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      y: { min: 0, max: 100, title: { display: true, text: 'discomfort score' } },
+      x: { ticks: { maxTicksLimit: 8 } }
+    },
+    plugins: {
+      annotation: { annotations: {
+        warnLine: { type: 'line', yMin: 50, yMax: 50, borderColor: '#e67e22', borderDash: [4,4] },
+      } }
+    }
+  }
+});
+
+new Chart(document.getElementById('thChart'), {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [
+      { ...defaults, label: '温度(°C)', data: temperature, borderColor: '#e67e22', yAxisID: 'yT' },
+      { ...defaults, label: '湿度(%)', data: humidity, borderColor: '#3498db', yAxisID: 'yH' },
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      yT: { position: 'left',  min: 15, max: 35, title: { display: true, text: '°C' } },
+      yH: { position: 'right', min: 30, max: 80, title: { display: true, text: '%' }, grid: { drawOnChartArea: false } },
+      x:  { ticks: { maxTicksLimit: 6 } }
+    }
+  }
+});
+
+new Chart(document.getElementById('iaqChart'), {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [{
+      ...defaults,
+      label: 'IAQ',
+      data: iaq,
+      borderColor: '#9b59b6',
+      backgroundColor: 'rgba(155,89,182,.08)',
+      fill: true,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      y: { min: 0, title: { display: true, text: 'IAQ' } },
+      x: { ticks: { maxTicksLimit: 6 } }
+    }
+  }
+});
+</script>
+</body>
+</html>
