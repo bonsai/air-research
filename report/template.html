@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>空間環境調査レポート — AIR Research</title>
+  <style>
+    /* ── リセット ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── フォント ── */
+    body {
+      font-family: 'Hiragino Sans', 'Noto Sans JP', 'Yu Gothic', sans-serif;
+      font-size: 10pt;
+      color: #1a1a1a;
+      background: #e8e8e8;
+    }
+
+    /* ── A4ページ ── */
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 12mm auto;
+      background: #fff;
+      padding: 14mm 16mm 14mm;
+      position: relative;
+      page-break-after: always;
+    }
+    .page:last-child { page-break-after: auto; }
+
+    /* ── 印刷設定 ── */
+    @page {
+      size: A4;
+      margin: 0;
+    }
+    @media print {
+      body { background: none; }
+      .page { margin: 0; box-shadow: none; }
+    }
+
+    /* ── ヘッダー（1枚目） ── */
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding-bottom: 8pt;
+      border-bottom: 2.5pt solid #1a252f;
+      margin-bottom: 10pt;
+    }
+    .brand { font-size: 7pt; color: #888; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 2pt; }
+    .report-title { font-size: 17pt; font-weight: 700; letter-spacing: .03em; color: #1a252f; line-height: 1.2; }
+    .report-meta { text-align: right; font-size: 8pt; color: #555; line-height: 1.9; }
+
+    /* ── ページ2ヘッダー（薄め） ── */
+    .page-header-sub {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 5pt;
+      border-bottom: 1pt solid #ccc;
+      margin-bottom: 10pt;
+      font-size: 8pt;
+      color: #888;
+    }
+
+    /* ── セクション ── */
+    h2 {
+      font-size: 9.5pt;
+      font-weight: 700;
+      color: #1a252f;
+      border-left: 3pt solid #2ecc71;
+      padding-left: 6pt;
+      margin: 10pt 0 5pt;
+      letter-spacing: .04em;
+    }
+    h3 { font-size: 9pt; font-weight: 600; margin: 7pt 0 3pt; color: #333; }
+
+    /* ── 概要ボックス ── */
+    .summary-box {
+      background: #f4f6f9;
+      border-radius: 4pt;
+      padding: 10pt 12pt;
+      display: flex;
+      gap: 12pt;
+      align-items: center;
+      margin-bottom: 8pt;
+    }
+    .score-ring {
+      width: 54pt;
+      height: 54pt;
+      border-radius: 50%;
+      background: #2ecc71;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-weight: 700;
+    }
+    .score-ring .num { font-size: 18pt; line-height: 1; }
+    .score-ring .lbl { font-size: 6pt; opacity: .85; margin-top: 1pt; }
+    .summary-text p { font-size: 9pt; line-height: 1.7; color: #333; }
+    .summary-text strong { color: #1a252f; }
+
+    /* ── KPIグリッド ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 5pt;
+      margin-bottom: 8pt;
+    }
+    .kpi {
+      border: 1pt solid #e0e0e0;
+      border-radius: 3pt;
+      padding: 6pt 4pt;
+      text-align: center;
+    }
+    .kpi .k-label { font-size: 7pt; color: #666; margin-bottom: 2pt; }
+    .kpi .k-value { font-size: 11pt; font-weight: 700; line-height: 1; }
+    .kpi .k-unit  { font-size: 7pt; color: #888; }
+    .kpi.good { border-color: #2ecc71; background: #f0fdf6; }
+    .kpi.warn { border-color: #e67e22; background: #fef9f0; }
+    .kpi.bad  { border-color: #e74c3c; background: #fdf0f0; }
+    .kpi.good .k-value { color: #1e8449; }
+    .kpi.warn .k-value { color: #b7770d; }
+    .kpi.bad  .k-value { color: #c0392b; }
+
+    /* ── 測定箇所マップ ── */
+    .location-map {
+      border: 1pt solid #ddd;
+      border-radius: 3pt;
+      background: #fafafa;
+      height: 72pt;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #bbb;
+      font-size: 8pt;
+      margin-bottom: 8pt;
+      position: relative;
+    }
+    .location-map .pin {
+      position: absolute;
+      width: 8pt; height: 8pt;
+      border-radius: 50%;
+      background: #e74c3c;
+      border: 1.5pt solid #fff;
+      box-shadow: 0 1pt 3pt rgba(0,0,0,.3);
+    }
+    .location-map .pin-label {
+      position: absolute;
+      font-size: 6.5pt;
+      color: #e74c3c;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    /* ── 時系列グラフエリア ── */
+    .chart-placeholder {
+      border: 1pt solid #e0e0e0;
+      border-radius: 3pt;
+      background: #fafafa;
+      padding: 6pt 8pt;
+      margin-bottom: 8pt;
+    }
+    .chart-placeholder .chart-title { font-size: 8pt; color: #555; margin-bottom: 4pt; font-weight: 600; }
+
+    /* ── 2カラムレイアウト ── */
+    .col2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8pt; margin-bottom: 8pt; }
+    .col3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8pt; margin-bottom: 8pt; }
+
+    /* ── テーブル ── */
+    table { width: 100%; border-collapse: collapse; font-size: 8.5pt; margin-bottom: 8pt; }
+    th { background: #1a252f; color: #fff; padding: 4pt 6pt; font-weight: 600; text-align: left; font-size: 8pt; }
+    td { padding: 4pt 6pt; border-bottom: .5pt solid #eee; }
+    tr:nth-child(even) td { background: #f9f9f9; }
+
+    /* ── バッジ ── */
+    .badge {
+      display: inline-block;
+      padding: 1pt 6pt;
+      border-radius: 10pt;
+      font-size: 7pt;
+      font-weight: 600;
+    }
+    .badge.good { background: #d5f5e3; color: #1e8449; }
+    .badge.warn { background: #fef3cd; color: #856404; }
+    .badge.bad  { background: #fde8e8; color: #c0392b; }
+
+    /* ── 改善提言 ── */
+    .finding {
+      border-left: 2.5pt solid #e74c3c;
+      padding: 5pt 8pt;
+      background: #fdf8f8;
+      margin-bottom: 5pt;
+      border-radius: 0 3pt 3pt 0;
+    }
+    .finding.warn { border-color: #e67e22; background: #fdf9f3; }
+    .finding.good { border-color: #2ecc71; background: #f4fdf7; }
+    .finding .f-title { font-size: 8.5pt; font-weight: 700; margin-bottom: 2pt; }
+    .finding .f-body  { font-size: 8pt; color: #444; line-height: 1.6; }
+    .finding .f-action { font-size: 7.5pt; color: #888; margin-top: 2pt; }
+    .finding .f-action::before { content: "▶ "; }
+
+    /* ── フッター ── */
+    .page-footer {
+      position: absolute;
+      bottom: 8mm;
+      left: 16mm;
+      right: 16mm;
+      display: flex;
+      justify-content: space-between;
+      font-size: 7pt;
+      color: #aaa;
+      border-top: .5pt solid #e0e0e0;
+      padding-top: 4pt;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════
+     1枚目
+     ════════════════════════════════════════ -->
+<div class="page">
+
+  <div class="page-header">
+    <div>
+      <div class="brand">AIR Research — 空間環境調査レポート</div>
+      <div class="report-title">◯◯ビル 3F 執務エリア<br>空気環境調査報告書</div>
+    </div>
+    <div class="report-meta">
+      調査日：2026年6月23日<br>
+      センサーID：poc-001<br>
+      測定時間：09:00〜18:00（9h）<br>
+      担当：AIR Research
+    </div>
+  </div>
+
+  <!-- 概要 -->
+  <h2>調査概要・総合評価</h2>
+  <div class="summary-box">
+    <div class="score-ring" style="background:#e67e22;">
+      <span class="num">62</span>
+      <span class="lbl">/ 100</span>
+    </div>
+    <div class="summary-text">
+      <p>
+        <strong>総合快適スコア 62点（要注意）。</strong>
+        午後の時間帯（13:00〜16:00）に体感不快指数が閾値（50pt）を継続的に超過しました。
+        主因は<strong>湿度の高まり（最大69%RH）</strong>と<strong>空調吹き出し口付近の気流乱流</strong>です。
+        温度・気圧は概ね快適範囲内でした。抜本的な換気改善と座席レイアウトの見直しを推奨します。
+      </p>
+    </div>
+  </div>
+
+  <!-- KPI -->
+  <h2>測定指標サマリー</h2>
+  <div class="kpi-grid">
+    <div class="kpi warn">
+      <div class="k-label">平均温度</div>
+      <div class="k-value">26.1<span class="k-unit">°C</span></div>
+    </div>
+    <div class="kpi bad">
+      <div class="k-label">平均湿度</div>
+      <div class="k-value">63.4<span class="k-unit">%</span></div>
+    </div>
+    <div class="kpi good">
+      <div class="k-label">気圧</div>
+      <div class="k-value">1013<span class="k-unit">hPa</span></div>
+    </div>
+    <div class="kpi bad">
+      <div class="k-label">最大IAQ</div>
+      <div class="k-value">170<span class="k-unit"></span></div>
+    </div>
+    <div class="kpi warn">
+      <div class="k-label">最大乱流</div>
+      <div class="k-value">0.16<span class="k-unit">m/s²</span></div>
+    </div>
+  </div>
+
+  <!-- 測定箇所 -->
+  <h2>測定箇所</h2>
+  <div class="location-map">
+    <span>フロアマップ（実測時に差し替え）</span>
+    <!-- ピン例 -->
+    <div class="pin" style="top:40%;left:30%;"></div>
+    <div class="pin-label" style="top:32%;left:32%;">①執務A</div>
+    <div class="pin" style="top:55%;left:55%;background:#e67e22;"></div>
+    <div class="pin-label" style="top:47%;left:57%;">②空調近傍</div>
+    <div class="pin" style="top:35%;left:70%;background:#3498db;"></div>
+    <div class="pin-label" style="top:27%;left:72%;">③会議室前</div>
+  </div>
+
+  <!-- 時系列グラフ -->
+  <h2>体感不快指数 推移（日中9h）</h2>
+  <div class="chart-placeholder">
+    <div class="chart-title">体感不快指数（0–100）　※50pt超 = 要注意ゾーン</div>
+    <!-- analyze.py の出力グラフをここに埋め込む or SVGで差し替え -->
+    <div style="height:60pt;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:8pt;">
+      グラフ（analyze.py 出力 / SVG / スクリーンショット貼り付け）
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>AIR Research — 本レポートの内容は測定時点の参考値です</span>
+    <span>1 / 2</span>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════
+     2枚目
+     ════════════════════════════════════════ -->
+<div class="page">
+
+  <div class="page-header-sub">
+    <span><strong>AIR Research</strong> — 空間環境調査レポート</span>
+    <span>◯◯ビル 3F 執務エリア　2026-06-23</span>
+  </div>
+
+  <!-- 詳細データ -->
+  <h2>測定データ詳細</h2>
+  <table>
+    <tr>
+      <th>指標</th>
+      <th>平均</th>
+      <th>最小</th>
+      <th>最大</th>
+      <th>P95</th>
+      <th>快適範囲</th>
+      <th>評価</th>
+    </tr>
+    <tr>
+      <td>温度</td>
+      <td>26.1°C</td>
+      <td>24.2°C</td>
+      <td>27.8°C</td>
+      <td>27.6°C</td>
+      <td>22〜26°C</td>
+      <td><span class="badge warn">注意</span></td>
+    </tr>
+    <tr>
+      <td>湿度</td>
+      <td>63.4%</td>
+      <td>58.1%</td>
+      <td>69.3%</td>
+      <td>68.8%</td>
+      <td>40〜60%</td>
+      <td><span class="badge bad">要改善</span></td>
+    </tr>
+    <tr>
+      <td>気圧</td>
+      <td>1013.0hPa</td>
+      <td>1012.5</td>
+      <td>1013.2</td>
+      <td>1013.2</td>
+      <td>参考値</td>
+      <td><span class="badge good">良好</span></td>
+    </tr>
+    <tr>
+      <td>空気質 (IAQ)</td>
+      <td>120</td>
+      <td>85</td>
+      <td>170</td>
+      <td>168</td>
+      <td>0〜100</td>
+      <td><span class="badge bad">要改善</span></td>
+    </tr>
+    <tr>
+      <td>気流乱流</td>
+      <td>0.072 m/s²</td>
+      <td>0.012</td>
+      <td>0.158</td>
+      <td>0.153</td>
+      <td>0〜0.05</td>
+      <td><span class="badge warn">注意</span></td>
+    </tr>
+    <tr>
+      <td><strong>体感不快指数</strong></td>
+      <td><strong>40.6pt</strong></td>
+      <td>22.4</td>
+      <td>61.2</td>
+      <td>60.1</td>
+      <td>0〜30</td>
+      <td><span class="badge warn">注意</span></td>
+    </tr>
+  </table>
+
+  <!-- 検出イベント -->
+  <h2>検出イベント</h2>
+  <table>
+    <tr>
+      <th>開始時刻</th><th>終了時刻</th><th>継続</th><th>種別</th><th>主因</th>
+    </tr>
+    <tr>
+      <td>13:02</td><td>16:18</td><td>3h16m</td>
+      <td><span class="badge bad">高不快ゾーン</span></td>
+      <td>湿度・IAQ複合上昇</td>
+    </tr>
+  </table>
+
+  <!-- 改善提言 -->
+  <h2>原因分析・改善提言</h2>
+
+  <div class="finding">
+    <div class="f-title">① 湿度過多（平均63%・最大69%RH）</div>
+    <div class="f-body">午後に在室人数増加に伴い湿度が継続上昇。快適域（40〜60%）を長時間逸脱し、IAQ悪化と連動して体感不快感を増幅。</div>
+    <div class="f-action">換気回数を午後は現状の1.5倍に増加 / 除湿機（20L/day相当）の追加設置を検討</div>
+  </div>
+
+  <div class="finding warn">
+    <div class="f-title">② 気流乱流（空調吹き出し口②番付近）</div>
+    <div class="f-body">センサー②（空調近傍）の乱流値が最大0.16m/s²と他点の3倍超。ドラフト感の直接原因と推定。</div>
+    <div class="f-action">吹き出し口の向き調整 または 該当2席を0.5〜1m移動させる</div>
+  </div>
+
+  <div class="finding warn">
+    <div class="f-title">③ IAQ悪化（最大IAQ=170）</div>
+    <div class="f-body">VOCガス抵抗値がベースラインから35%低下。ランチ後の在室人数ピーク時に顕著。CO₂蓄積が主因の可能性が高い。</div>
+    <div class="f-action">CO₂センサーの追加設置で閾値（1000ppm）超過を確認 / 全熱交換換気扇の導入を検討</div>
+  </div>
+
+  <!-- 次のステップ -->
+  <h2>推奨アクション（優先順）</h2>
+  <div class="col3" style="margin-bottom:10pt;">
+    <div style="border:1pt solid #e74c3c;border-radius:3pt;padding:7pt 8pt;background:#fdf8f8;">
+      <div style="font-size:7.5pt;font-weight:700;color:#c0392b;margin-bottom:3pt;">🔴 即時対応</div>
+      <div style="font-size:8pt;line-height:1.6;">吹き出し口②の<br>向き・風量調整</div>
+    </div>
+    <div style="border:1pt solid #e67e22;border-radius:3pt;padding:7pt 8pt;background:#fdf9f3;">
+      <div style="font-size:7.5pt;font-weight:700;color:#b7770d;margin-bottom:3pt;">🟠 1ヶ月以内</div>
+      <div style="font-size:8pt;line-height:1.6;">除湿機導入 /<br>換気スケジュール見直し</div>
+    </div>
+    <div style="border:1pt solid #3498db;border-radius:3pt;padding:7pt 8pt;background:#f0f7fd;">
+      <div style="font-size:7.5pt;font-weight:700;color:#2471a3;margin-bottom:3pt;">🔵 3ヶ月以内</div>
+      <div style="font-size:8pt;line-height:1.6;">CO₂センサー追加 /<br>全熱交換換気扇検討</div>
+    </div>
+  </div>
+
+  <!-- 注釈 -->
+  <div style="font-size:7.5pt;color:#888;line-height:1.7;border-top:.5pt solid #eee;padding-top:6pt;">
+    <strong>【測定機器】</strong> ESP32 + BME680（温湿度・VOC）+ MPU6050（振動）&emsp;
+    <strong>【体感不快指数】</strong> 温度偏差・湿度偏差・IAQ・乱流を重み付け合成した独自指標（0〜100）&emsp;
+    <strong>【免責】</strong> 本データは簡易PoC機器による参考値です。建築設備の変更判断には専門家によるより精密な調査を併用してください。
+  </div>
+
+  <div class="page-footer">
+    <span>AIR Research — 本レポートの内容は測定時点の参考値です</span>
+    <span>2 / 2</span>
+  </div>
+</div>
+
+</body>
+</html>
